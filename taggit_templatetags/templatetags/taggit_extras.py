@@ -17,10 +17,10 @@ T_MIN = getattr(settings, 'TAGCLOUD_MIN', 1.0)
 register = template.Library()
 
 def get_queryset(forvar=None):
-    if None == forvar:
+    if forvar is None:
         # get all tags
         queryset = Tag.objects.all()
-    else:
+    elif isinstance(forvar, basestring):
         # extract app label and model name
         beginning, applabel, model = None, None, None
         try:
@@ -40,6 +40,8 @@ def get_queryset(forvar=None):
         # get tags
         tag_ids = queryset.values_list('tag_id', flat=True)
         queryset = Tag.objects.filter(id__in=tag_ids)
+    else:
+        queryset = forvar
 
     # Retain compatibility with older versions of Django taggit
     # a version check (for example taggit.VERSION <= (0,8,0)) does NOT

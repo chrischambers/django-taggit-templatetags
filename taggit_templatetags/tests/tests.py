@@ -77,6 +77,21 @@ class TemplateTagListTestCase(SetUpTestCase, BaseTaggingTest, TestCase):
         t.render(c)
         self.assert_tags_equal(c.get("taglist"), ["sweet", "green", "yellow"], False)
 
+    def test_manager(self):
+        apple = AlphaModel.objects.get(name='apple')
+        t = Template(self.get_template("as taglist for apple.tags"))
+        c = Context({'apple': apple})
+        t.render(c)
+        self.assert_tags_equal(c.get("taglist"), ["green", "sweet", "fresh"], False)
+
+    def test_queryset(self):
+        apple = AlphaModel.objects.get(name='apple')
+        t = Template(self.get_template("as taglist for apple.tags.all"))
+        c = Context({'apple': apple})
+        t.render(c)
+        self.assert_tags_equal(c.get("taglist"), ["green", "sweet", "fresh"], False)
+
+
 class TemplateTagCloudTestCase(SetUpTestCase, BaseTaggingTest, TestCase):
     def get_template(self, argument):
         return """      {%% load taggit_extras %%}
@@ -118,7 +133,31 @@ class TemplateTagCloudTestCase(SetUpTestCase, BaseTaggingTest, TestCase):
         self.assertEqual(c.get("taglist")[1].weight, 6.0)
         self.assertEqual(c.get("taglist")[2].name, "yellow")
         self.assertEqual(c.get("taglist")[2].weight, 1.0)
-        
+
+    def test_manager(self):
+        apple = AlphaModel.objects.get(name='apple')
+        t = Template(self.get_template("as taglist for apple.tags"))
+        c = Context({'apple': apple})
+        t.render(c)
+        self.assertEqual(c.get("taglist")[0].name, "fresh")
+        self.assertEqual(c.get("taglist")[0].weight, 6.0)
+        self.assertEqual(c.get("taglist")[1].name, "green")
+        self.assertEqual(c.get("taglist")[1].weight, 6.0)
+        self.assertEqual(c.get("taglist")[2].name, "sweet")
+        self.assertEqual(c.get("taglist")[2].weight, 6.0)
+
+    def test_queryset(self):
+        apple = AlphaModel.objects.get(name='apple')
+        t = Template(self.get_template("as taglist for apple.tags.all"))
+        c = Context({'apple': apple})
+        t.render(c)
+        self.assertEqual(c.get("taglist")[0].name, "fresh")
+        self.assertEqual(c.get("taglist")[0].weight, 6.0)
+        self.assertEqual(c.get("taglist")[1].name, "green")
+        self.assertEqual(c.get("taglist")[1].weight, 6.0)
+        self.assertEqual(c.get("taglist")[2].name, "sweet")
+        self.assertEqual(c.get("taglist")[2].weight, 6.0)
+
 class TemplateInclusionTagTest(SetUpTestCase, TestCase, BaseTaggingTest):    
     def test_taglist_project(self):
         t = get_template('taggit_templatetags/taglist_include.html')
@@ -213,4 +252,3 @@ class GammaPathologicalCaseTestCase(TestCase, BaseTaggingTest):
         c = Context({'forvar': None})
         t.render(c)
         self.assert_tags_equal(c.get("tags"), [], False)
-        
